@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispenser de Agua</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #0077cc;
+    }
+    button {
+      padding: 15px 25px;
+      margin: 15px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #0077cc;
+      color: white;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    #estado {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>¡Gracias por tu pago! 💧</h1>
+  <p>Elegí el tipo de agua:</p>
+
+  <button id="btnCaliente">Agua CALIENTE</button>
+  <button id="btnFria">Agua FRÍA</button>
+
+  <p id="estado">Conectando...</p>
+
+  <!-- MQTT.js -->
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+  <script>
+    // ⚙ CONFIGURACIÓN (editá esto con tus datos reales)
+    const MACHINE_ID = "agua001";
+    const MQTT_URL   = "wss://XXXXX.s2.eu.hivemq.cloud:8884/mqtt";  // <-- tu broker
+    const MQTT_USER  = "TU_USUARIO";   // <-- usuario HiveMQ
+    const MQTT_PASS  = "TU_PASSWORD";  // <-- contraseña HiveMQ
+
+    const topicAllow = `dispen/${MACHINE_ID}/allow`;
+    const estadoEl   = document.getElementById("estado");
+
+    // Obtener token desde ?token=...
+    const params = new URLSearchParams(window.location.search);
+    const tokenPago = params.get("token") || ("TEST-" + Date.now());
+
+    console.log("Token:", tokenPago);
+
+    // Conexión MQTT
+    const client = mqtt.connect(MQTT_URL, {
+      username: MQTT_USER,
+      password: MQTT_PASS,
+      reconnectPeriod: 2000,
+    });
+
+    client.on("connect", () => {
+      estadoEl.textContent = "Conectado. Seleccioná agua caliente o fría.";
+    });
+
+    client.on("error", (e) => {
+      estadoEl.textContent = "Error conectando al dispenser...";
+      console.error("MQTT error:", e);
+    });
+
+    function habilitarSalida(salida) {
+      if (!client.connected) {
+        estadoEl.textContent = "No conectado al dispenser...";
+        return;
+      }
+
+      const payload = {
+        salida: salida,
+        ms: 5000,
+        token: tokenPago,
+        timestamp: Date.now()
+      };
+
+      client.publish(topicAllow, JSON.stringify(payload), { qos: 1 });
+
+      estadoEl.textContent = 
+        (salida === 1 ? "Agua caliente" : "Agua fría") + " habilitada.";
+    }
+
+    document.getElementById("btnCaliente").onclick = () => habilitarSalida(1);
+    document.getElementById("btnFria").onclick     = () => habilitarSalida(2);
+  </script>
+</body>
+</html>
