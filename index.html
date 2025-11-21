@@ -1,81 +1,172 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Dispen Agua</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dispenser Agua</title>
 
-<style>
-  body {
-    font-family: Arial;
-    text-align: center;
-    margin-top: 40px;
-  }
-  h1 { color: #007bff; }
-  button {
-    padding: 15px 30px;
-    margin: 10px;
-    font-size: 20px;
-    border: none;
-    background: #0a84ff;
-    color: white;
-    border-radius: 8px;
-  }
-  #estado { margin-top: 20px; font-size: 18px; }
-</style>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      background: #2196f3;
+      color: white;
+      border-radius: 5px;
+    }
+    input {
+      padding: 5px;
+      margin: 5px;
+    }
+  </style>
 </head>
 
 <body>
 
-<h1>¡Gracias por tu pago! 💧</h1>
-<p>Elegí el tipo de agua:</p>
+<h1>Administración Dispenser Agua</h1>
 
-<button onclick="enviar('caliente')">Agua CALIENTE</button>
-<button onclick="enviar('fria')">Agua FRÍA</button>
+<!-- LOGIN -->
+<div id="loginBox">
+  <input id="adminSecretInput" placeholder="adminSecret" />
+  <button onclick="loginAdmin()">Ingresar</button>
+</div>
 
-<div id="estado">Conectando...</div>
+<!-- PANEL -->
+<div id="panel" style="display:none">
+
+  <button onclick="vincularMP()">Vincular MP</button>
+  <button onclick="desvincularMP()">Desvincular</button>
+
+  <h2>Dispensers</h2>
+  <div id="dispensers"></div>
+  <button onclick="agregarDispenser()">+ Agregar Dispenser</button>
+
+  <h2>Pagos recientes</h2>
+  <button onclick="cargarPagos()">Refrescar</button>
+  <div id="pagos"></div>
+
+</div>
 
 <script>
-const BACKEND = "https://web-production-e7d2.up.railway.app";
-let pago_id = "";
-let dispenser_id = "";
-let tiempo_segundos = 20;
+const API = "https://web-production-e7d2.up.railway.app";
 
-// Leer parámetros del link ?pago_id=xxxxx&dispenser=ddd
-const params = new URLSearchParams(window.location.search);
-pago_id = params.get("pago_id") || "";
-dispenser_id = params.get("dispenser") || "dispen-01";
-
-document.getElementById("estado").innerText = "Listo para dispensar";
-
-async function enviar(tipo) {
-    document.getElementById("estado").innerText = "Enviando comando...";
-
-    const body = {
-        pago_id: pago_id,
-        tipo: tipo,
-        dispenser: dispenser_id
-    };
-
-    try {
-        const r = await fetch(BACKEND + "/api/dispense_cmd", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
-        });
-
-        const data = await r.json();
-        if (data.ok) {
-            document.getElementById("estado").innerText =
-              "Esperando que el dispensador termine...";
-        } else {
-            document.getElementById("estado").innerText = "Error: " + data.error;
-        }
-    } catch (err) {
-        document.getElementById("estado").innerText = "Error conectando al servidor.";
-    }
+/* LOGIN */
+function adminSecret() {
+  return sessionStorage.getItem("adminSecret") || "";
+}
+function auth() {
+  return {
+    "Content-Type": "application/json",
+    "x-admin-secret": adminSecret(),
+  };
+}
+function loginAdmin() {
+  const v = document.getElementById("adminSecretInput").value.trim();
+  if (!v) return alert("Ingrese adminSecret");
+  sessionStorage.setItem("adminSecret", v);
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("panel").style.display = "block";
+  cargarDispensers();
+  cargarPagos();
 }
 
+/* DISPENSERS */
+async function cargarDispensers() {
+  const r = await fetch(API + "/api/dispensers", { headers: auth() });
+  const j = await r.json();
+  const cont = document.getElementById("dispensers");
+  cont.innerHTML = "";
+
+  j.forEach((d) => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <b>${d.device_id}</b><br>
+      Nombre: <input id="n-${d.id}" value="${d.nombre}" /><br>
+      Stock: <input id="s-${d.id}" value="${d.stock}" /><br>
+      Precio: <input id="p-${d.id}" value="${d.precio}" /><br><br>
+
+      <button onclick="guardar(${d.id})">Guardar</button>
+      <button onclick="qr(${d.id})">QR</button>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+async function guardar(id) {
+  const nombre = document.getElementById("n-" + id).value;
+  const stock = document.getElementById("s-" + id).value;
+  const precio = document.getElementById("p-" + id).value;
+
+  await fetch(API + "/api/dispensers/" + id, {
+    method: "PUT",
+    headers: auth(),
+    body: JSON.stringify({ nombre, stock, precio }),
+  });
+
+  alert("Guardado");
+}
+
+function qr(id) {
+  /* 🔥 FIX DEL QR: ahora ABRE correctamente el PNG del backend */
+  window.open(API + `/api/dispensers/${id}/qr_img`, "_blank");
+}
+
+async function agregarDispenser() {
+  await fetch(API + "/api/dispensers", {
+    method: "POST",
+    headers: auth(),
+    body: JSON.stringify({ nombre: "Nuevo", stock: 0, precio: 0 }),
+  });
+  cargarDispensers();
+}
+
+/* PAGOS */
+async function cargarPagos() {
+  const r = await fetch(API + "/api/pagos", { headers: auth() });
+  const j = await r.json();
+  const div = document.getElementById("pagos");
+  div.innerHTML = "";
+
+  j.forEach((p) => {
+    const line = document.createElement("div");
+    line.className = "card";
+    line.innerHTML = `
+      <b>${p.payment_id}</b> - ${p.estado}<br>
+      Producto: ${p.producto} — Monto: ${p.monto}<br>
+      ${p.fecha}
+    `;
+    div.appendChild(line);
+  });
+}
+
+/* MP */
+function vincularMP() {
+  window.location = API + "/api/mp/oauth/init";
+}
+async function desvincularMP() {
+  await fetch(API + "/api/mp/unlink", {
+    method: "POST",
+    headers: auth(),
+  });
+  alert("MP desvinculado");
+}
 </script>
+
 </body>
 </html>
