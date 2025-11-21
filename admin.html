@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dispenser Agua</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+    <h1>Administración Dispenser Agua</h1>
+
+    <div>
+        <label>ID del dispenser:</label>
+        <input id="dispId" type="number" value="1">
+        <button onclick="generarQR()">Generar QR</button>
+    </div>
+
+    <div id="qrBox" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h2>QR de Pago</h2>
+            <img id="qrImg" style="width:250px;height:250px;">
+            <br><br>
+            <button id="btnMP" class="green">Abrir MercadoPago</button>
+            <br><br>
+            <button onclick="cerrarQR()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = "https://web-production-e7d2.up.railway.app";
+const ADMIN_SECRET = "adm123";
+
+function generarQR() {
+    const id = document.getElementById("dispId").value.trim();
+    if (!id) return alert("Ingrese ID");
+
+    fetch(`${API}/api/dispenser/${id}/qr`, {
+        headers: {
+            "x-admin-secret": ADMIN_SECRET
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data || !data.qr) {
+            alert("Error obteniendo QR");
+            return;
+        }
+
+        document.getElementById("qrImg").src = data.qr;
+        document.getElementById("btnMP").onclick = () => window.open(data.init_point, "_blank");
+        document.getElementById("qrBox").style.display = "block";
+    })
+    .catch(err => alert("Error de conexión"));
+}
+
+function cerrarQR() {
+    document.getElementById("qrBox").style.display = "none";
+}
+</script>
+</body>
+</html>
