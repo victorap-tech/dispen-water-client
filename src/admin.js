@@ -1,48 +1,99 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Administración Dispenser Agua</title>
-  <link rel="stylesheet" href="./styles.css"/>
-</head>
+const API = "https://web-production-e7d2.up.railway.app";
 
-<body>
+function adminSecret() {
+  return sessionStorage.getItem("adminSecret") || "";
+}
 
-<div id="admin-container">
+function auth() {
+  return {
+    "Content-Type": "application/json",
+    "x-admin-secret": adminSecret()
+  };
+}
 
-  <h1>Administración Dispenser Agua</h1>
+function loginAdmin() {
+  const v = document.getElementById("adminSecretInput").value.trim();
+  if (!v) return alert("Ingrese adminSecret");
+  sessionStorage.setItem("adminSecret", v);
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("panel").style.display = "block";
+  cargarDispensers();
+  cargarPagos();
+}
 
-  <!-- Login simple -->
-  <div id="loginBox">
-    <input id="adminSecretInput" placeholder="adminSecret"/>
-    <button onclick="loginAdmin()">Ingresar</button>
-  </div>
+async function cargarDispensers() {
+  const r = await fetch(API + "/api/dispensers", { headers: auth() });
+  const j = await r.json();
+  const cont = document.getElementById("dispensers");
+  cont.innerHTML = "";
 
-  <!-- Panel -->
-  <div id="panel" style="display:none">
+  j.forEach(d => {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <b>${d.device_id}</b><br>
+      <label>Nombre:</label><input id="n-${d.id}" value="${d.nombre}"><br>
+      <label>Stock:</label><input id="s-${d.id}" value="${d.stock}"><br>
+      <label>Precio:</label><input id="p-${d.id}" value="${d.precio}"><br>
+      <button onclick="guardar(${d.id})">Guardar</button>
+      <button onclick="qr(${d.id})">QR</button>
+    `;
+    cont.appendChild(div);
+  });
+}
 
-    <h3>MercadoPago</h3>
-    <button onclick="vincularMP()">Vincular MP</button>
-    <button onclick="desvincularMP()">Desvincular</button>
+async function guardar(id) {
+  const nombre = document.getElementById("n-"+id).value;
+  const stock  = document.getElementById("s-"+id).value;
+  const precio = document.getElementById("p-"+id).value;
 
-    <hr/>
+  await fetch(API + "/api/dispensers/" + id, {
+    method:"PUT",
+    headers: auth(),
+    body: JSON.stringify({nombre, stock, precio})
+  });
 
-    <h3>Dispensers</h3>
-    <div id="dispensers"></div>
-    <button onclick="agregarDispenser()">+ Agregar Dispenser</button>
+  alert("Guardado");
+}
 
-    <hr/>
+function qr(id) {
+  window.open(API + "/api/dispensers/" + id + "/qr", "_blank");
+}
 
-    <h3>Pagos recientes</h3>
-    <button onclick="cargarPagos()">Refrescar</button>
-    <div id="pagos"></div>
+async function agregarDispenser() {
+  await fetch(API + "/api/dispensers", {
+    method:"POST",
+    headers: auth(),
+    body: JSON.stringify({nombre:"Nuevo", stock:0, precio:0})
+  });
+  cargarDispensers();
+}
 
-  </div>
+async function cargarPagos() {
+  const r = await fetch(API + "/api/pagos", { headers: auth() });
+  const j = await r.json();
+  const div = document.getElementById("pagos");
+  div.innerHTML = "";
+  j.forEach(p => {
+    const line = document.createElement("div");
+    line.className = "card";
+    line.innerHTML = `
+      <b>${p.payment_id}</b> - ${p.estado}<br>
+      Producto: ${p.producto} — Monto: ${p.monto}<br>
+      ${p.fecha}
+    `;
+    div.appendChild(line);
+  });
+}
 
-</div>
+function vincularMP() {
+  window.location.href = API + "/api/mp/oauth/init";
+}
 
-<script src="./admin.js"></script>
-
-</body>
-</html>
+async function desvincularMP() {
+  await fetch(API + "/api/mp/unlink", {
+    method:"POST",
+    headers: auth()
+  });
+  alert("Cuenta MP desvinculada");
+}
