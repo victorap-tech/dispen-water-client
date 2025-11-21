@@ -1,38 +1,87 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispenser Agua</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8" />
+  <title>Admin – Dispenser Agua</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./src/styles.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>¡Gracias por tu pago! 💧</h1>
-        <p>Elegí el tipo de agua:</p>
-
-        <button onclick="dispensar(1)">Agua CALIENTE</button>
-        <button onclick="dispensar(2)">Agua FRÍA</button>
-
-        <p id="estado"></p>
+  <header class="topbar">
+    <div>
+      <h1>Administración Dispenser Agua</h1>
+      <div class="backend-url">
+        Backend: <span id="backendUrl">https://web-production-e7d2.up.railway.app</span>
+      </div>
     </div>
+    <div class="admin-auth">
+      <label>
+        Admin secret:
+        <input id="adminSecretInput" type="password" placeholder="pegar clave…" />
+      </label>
+      <button id="saveAdminSecretBtn">Guardar</button>
+    </div>
+  </header>
 
-<script>
-const API = "https://web-production-e7d2.up.railway.app";
+  <main class="layout">
+    <section class="panel panel-mp">
+      <h2>MercadoPago</h2>
+      <div class="mp-line">
+        <span id="mpModeLabel" class="pill pill-mode">Modo: …</span>
+        <span id="mpLinkedLabel" class="pill pill-link">Vinculado: …</span>
+      </div>
+      <div class="mp-actions">
+        <button id="btnMpTest">Modo TEST</button>
+        <button id="btnMpLive">Modo PROD</button>
+        <button id="btnMpVincular">Vincular MP</button>
+        <button id="btnMpDesvincular">Desvincular</button>
+      </div>
+      <p class="mp-help">
+        • “Vincular MP” abre la pantalla de autorización de MercadoPago.<br>
+        • Después de aceptar, volvés manualmente a esta pantalla para seguir configurando.
+      </p>
+    </section>
 
-function dispensar(salida) {
-    document.getElementById("estado").innerText = "Habilitando salida...";
+    <section class="panel panel-dispensers">
+      <div class="panel-header">
+        <h2>Dispensers</h2>
+        <button id="btnAgregarDispenser">+ Agregar Dispenser</button>
+      </div>
+      <div id="dispensersContainer" class="dispensers-list">
+        <!-- acá se dibujan los dispensers -->
+      </div>
+    </section>
 
-    fetch(`${API}/api/dispensar/${salida}`, { method: "POST" })
-        .then(r => r.json())
-        .then(d => {
-            document.getElementById("estado").innerText = d.ok ? 
-                "Listo para dispensar" : "Error en el dispensado";
-        })
-        .catch(() => {
-            document.getElementById("estado").innerText = "Error de conexión";
-        });
-}
-</script>
+    <section class="panel panel-pagos">
+      <div class="panel-header">
+        <h2>Pagos recientes</h2>
+        <button id="btnRefrescarPagos">Refrescar</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>MP payment_id</th>
+              <th>Estado</th>
+              <th>Producto</th>
+              <th>Slot</th>
+              <th>Device</th>
+              <th>Monto</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="pagosBody">
+            <!-- filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="statusBar" class="status-bar"></div>
+
+  <script type="module" src="./src/admin.js"></script>
 </body>
 </html>
