@@ -1,87 +1,32 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <title>Admin – Dispenser Agua</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./src/styles.css" />
-</head>
-<body>
-  <header class="topbar">
-    <div>
-      <h1>Administración Dispenser Agua</h1>
-      <div class="backend-url">
-        Backend: <span id="backendUrl">https://web-production-e7d2.up.railway.app</span>
-      </div>
-    </div>
-    <div class="admin-auth">
-      <label>
-        Admin secret:
-        <input id="adminSecretInput" type="password" placeholder="pegar clave…" />
-      </label>
-      <button id="saveAdminSecretBtn">Guardar</button>
-    </div>
-  </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dispen Agua – Admin</title>
 
-  <main class="layout">
-    <section class="panel panel-mp">
-      <h2>MercadoPago</h2>
-      <div class="mp-line">
-        <span id="mpModeLabel" class="pill pill-mode">Modo: …</span>
-        <span id="mpLinkedLabel" class="pill pill-link">Vinculado: …</span>
-      </div>
-      <div class="mp-actions">
-        <button id="btnMpTest">Modo TEST</button>
-        <button id="btnMpLive">Modo PROD</button>
-        <button id="btnMpVincular">Vincular MP</button>
-        <button id="btnMpDesvincular">Desvincular</button>
-      </div>
-      <p class="mp-help">
-        • “Vincular MP” abre la pantalla de autorización de MercadoPago.<br>
-        • Después de aceptar, volvés manualmente a esta pantalla para seguir configurando.
-      </p>
-    </section>
+    <!-- QRIOUS para generar códigos QR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
-    <section class="panel panel-dispensers">
-      <div class="panel-header">
-        <h2>Dispensers</h2>
-        <button id="btnAgregarDispenser">+ Agregar Dispenser</button>
-      </div>
-      <div id="dispensersContainer" class="dispensers-list">
-        <!-- acá se dibujan los dispensers -->
-      </div>
-    </section>
+    <!-- Fuente opcional (se ve mejor) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-    <section class="panel panel-pagos">
-      <div class="panel-header">
-        <h2>Pagos recientes</h2>
-        <button id="btnRefrescarPagos">Refrescar</button>
-      </div>
-      <div class="table-wrapper">
-        <table class="tabla">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>MP payment_id</th>
-              <th>Estado</th>
-              <th>Producto</th>
-              <th>Slot</th>
-              <th>Device</th>
-              <th>Monto</th>
-              <th>Fecha</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="pagosBody">
-            <!-- filas dinámicas -->
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background: #0d1117;
+        color: #e5e5e5;
+      }
+    </style>
+  </head>
 
-  <div id="statusBar" class="status-bar"></div>
+  <body>
+    <div id="root"></div>
 
-  <script type="module" src="./src/admin.js"></script>
-</body>
+    <!-- Este script lo genera Vite automáticamente -->
+    <script type="module" src="/src/AdminPanel.jsx"></script>
+  </body>
 </html>
