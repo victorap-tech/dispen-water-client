@@ -1,49 +1,87 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Gracias por tu pago 💧</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f2f8ff;
-        text-align: center;
-        padding: 40px;
-    }
-    h1 { color: #007bff; }
-    button {
-        padding: 15px 25px;
-        font-size: 18px;
-        margin: 10px;
-        border: none;
-        border-radius: 8px;
-        background: #0099ff;
-        color: white;
-        cursor: pointer;
-    }
-    button:hover { background: #0077cc; }
-</style>
+  <meta charset="utf-8" />
+  <title>Admin – Dispenser Agua</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./src/styles.css" />
 </head>
 <body>
+  <header class="topbar">
+    <div>
+      <h1>Administración Dispenser Agua</h1>
+      <div class="backend-url">
+        Backend: <span id="backendUrl">https://web-production-e7d2.up.railway.app</span>
+      </div>
+    </div>
+    <div class="admin-auth">
+      <label>
+        Admin secret:
+        <input id="adminSecretInput" type="password" placeholder="pegar clave…" />
+      </label>
+      <button id="saveAdminSecretBtn">Guardar</button>
+    </div>
+  </header>
 
-<h1>¡Gracias por tu pago! 💧</h1>
-<p>Elegí el tipo de agua:</p>
+  <main class="layout">
+    <section class="panel panel-mp">
+      <h2>MercadoPago</h2>
+      <div class="mp-line">
+        <span id="mpModeLabel" class="pill pill-mode">Modo: …</span>
+        <span id="mpLinkedLabel" class="pill pill-link">Vinculado: …</span>
+      </div>
+      <div class="mp-actions">
+        <button id="btnMpTest">Modo TEST</button>
+        <button id="btnMpLive">Modo PROD</button>
+        <button id="btnMpVincular">Vincular MP</button>
+        <button id="btnMpDesvincular">Desvincular</button>
+      </div>
+      <p class="mp-help">
+        • “Vincular MP” abre la pantalla de autorización de MercadoPago.<br>
+        • Después de aceptar, volvés manualmente a esta pantalla para seguir configurando.
+      </p>
+    </section>
 
-<button onclick="seleccionar(2)">Agua CALIENTE</button>
-<button onclick="seleccionar(1)">Agua FRÍA</button>
+    <section class="panel panel-dispensers">
+      <div class="panel-header">
+        <h2>Dispensers</h2>
+        <button id="btnAgregarDispenser">+ Agregar Dispenser</button>
+      </div>
+      <div id="dispensersContainer" class="dispensers-list">
+        <!-- acá se dibujan los dispensers -->
+      </div>
+    </section>
 
-<p id="msg"></p>
+    <section class="panel panel-pagos">
+      <div class="panel-header">
+        <h2>Pagos recientes</h2>
+        <button id="btnRefrescarPagos">Refrescar</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>MP payment_id</th>
+              <th>Estado</th>
+              <th>Producto</th>
+              <th>Slot</th>
+              <th>Device</th>
+              <th>Monto</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="pagosBody">
+            <!-- filas dinámicas -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
-<script>
-function seleccionar(slot) {
-    document.getElementById("msg").innerHTML =
-        "Perfecto, acercá tu botella al dispenser.<br>El equipo está recibiendo la orden...";
+  <div id="statusBar" class="status-bar"></div>
 
-    // En Dispen-Water NO enviamos nada desde el cliente.
-    // El backend ya envió el MQTT al ESP32.
-}
-</script>
-
+  <script type="module" src="./src/admin.js"></script>
 </body>
 </html>
