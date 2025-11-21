@@ -1,12 +1,49 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dispenser Agua - Admin</title>
-  </head>
-  <body style="background:#0a0f1c;color:white;font-family:Arial;">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gracias por tu pago 💧</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f2f8ff;
+        text-align: center;
+        padding: 40px;
+    }
+    h1 { color: #007bff; }
+    button {
+        padding: 15px 25px;
+        font-size: 18px;
+        margin: 10px;
+        border: none;
+        border-radius: 8px;
+        background: #0099ff;
+        color: white;
+        cursor: pointer;
+    }
+    button:hover { background: #0077cc; }
+</style>
+</head>
+<body>
+
+<h1>¡Gracias por tu pago! 💧</h1>
+<p>Elegí el tipo de agua:</p>
+
+<button onclick="seleccionar(2)">Agua CALIENTE</button>
+<button onclick="seleccionar(1)">Agua FRÍA</button>
+
+<p id="msg"></p>
+
+<script>
+function seleccionar(slot) {
+    document.getElementById("msg").innerHTML =
+        "Perfecto, acercá tu botella al dispenser.<br>El equipo está recibiendo la orden...";
+
+    // En Dispen-Water NO enviamos nada desde el cliente.
+    // El backend ya envió el MQTT al ESP32.
+}
+</script>
+
+</body>
 </html>
