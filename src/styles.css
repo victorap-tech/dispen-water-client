@@ -1,0 +1,38 @@
+body { margin: 0; padding: 0; }
+
+.login {
+  max-width: 400px;
+  margin: 20vh auto;
+  text-align: center;
+}
+
+input {
+  padding: 10px;
+  margin: 5px;
+  width: 90%;
+}
+
+button {
+  padding: 10px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.panel { padding: 20px; }
+
+.disp-card {
+  border: 1px solid #333;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 8px;
+}
+
+.prod-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.vincular { background: #4caf50; color: white; }
+.desvincular { background: #e53935; color: white; }
+.add { background: #2196f3; color: white; }
