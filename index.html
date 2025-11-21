@@ -1,32 +1,81 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dispen Agua – Admin</title>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dispen Agua</title>
 
-    <!-- QRIOUS para generar códigos QR -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<style>
+  body {
+    font-family: Arial;
+    text-align: center;
+    margin-top: 40px;
+  }
+  h1 { color: #007bff; }
+  button {
+    padding: 15px 30px;
+    margin: 10px;
+    font-size: 20px;
+    border: none;
+    background: #0a84ff;
+    color: white;
+    border-radius: 8px;
+  }
+  #estado { margin-top: 20px; font-size: 18px; }
+</style>
+</head>
 
-    <!-- Fuente opcional (se ve mejor) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<body>
 
-    <style>
-      body {
-        margin: 0;
-        font-family: 'Inter', sans-serif;
-        background: #0d1117;
-        color: #e5e5e5;
-      }
-    </style>
-  </head>
+<h1>¡Gracias por tu pago! 💧</h1>
+<p>Elegí el tipo de agua:</p>
 
-  <body>
-    <div id="root"></div>
+<button onclick="enviar('caliente')">Agua CALIENTE</button>
+<button onclick="enviar('fria')">Agua FRÍA</button>
 
-    <!-- Este script lo genera Vite automáticamente -->
-    <script type="module" src="/src/AdminPanel.jsx"></script>
-  </body>
+<div id="estado">Conectando...</div>
+
+<script>
+const BACKEND = "https://web-production-e7d2.up.railway.app";
+let pago_id = "";
+let dispenser_id = "";
+let tiempo_segundos = 20;
+
+// Leer parámetros del link ?pago_id=xxxxx&dispenser=ddd
+const params = new URLSearchParams(window.location.search);
+pago_id = params.get("pago_id") || "";
+dispenser_id = params.get("dispenser") || "dispen-01";
+
+document.getElementById("estado").innerText = "Listo para dispensar";
+
+async function enviar(tipo) {
+    document.getElementById("estado").innerText = "Enviando comando...";
+
+    const body = {
+        pago_id: pago_id,
+        tipo: tipo,
+        dispenser: dispenser_id
+    };
+
+    try {
+        const r = await fetch(BACKEND + "/api/dispense_cmd", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        const data = await r.json();
+        if (data.ok) {
+            document.getElementById("estado").innerText =
+              "Esperando que el dispensador termine...";
+        } else {
+            document.getElementById("estado").innerText = "Error: " + data.error;
+        }
+    } catch (err) {
+        document.getElementById("estado").innerText = "Error conectando al servidor.";
+    }
+}
+
+</script>
+</body>
 </html>
